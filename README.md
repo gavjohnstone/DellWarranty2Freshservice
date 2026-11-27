@@ -36,16 +36,34 @@ python main.py
 > On Linux you may also need a WebKit GTK backend for pywebview
 > (`pip install pywebview[qt]` or the distro's `python3-gi` + WebKit2 package).
 
-## Demo mode
+## Demo mode vs live data
 
 `demo_mode` is **on by default** (see `app/config.py`). In demo mode the app
-makes no network calls at all — it serves the bundled sample dataset and a
-representative run sequence, so the whole UI is explorable before any
-credentials are configured. Turn it off once real credentials are saved to
-talk to the live Dell and Freshservice APIs.
+makes no network calls at all — it serves the bundled sample dataset (the
+`CORP-…` rows) and a representative run sequence, so the whole UI is
+explorable before any credentials are configured. A **Demo data** badge next
+to the Warranty Sync title makes the current source obvious.
+
+To use **live** data:
+
+1. On the **Configuration** tab, turn on **Use live Dell & Freshservice APIs**
+   (top card).
+2. Enter the Dell **Client Secret** and Freshservice **API Key** and click
+   **Save settings** (both go to the OS credential store).
+3. Back on **Warranty Sync**, pick an asset type and **Fetch**.
+
+If live mode is on but a credential is missing, the app says so in the
+activity log instead of calling out.
+
+> **Note:** the live Dell TechDirect / Freshservice request and response
+> shapes in `app/dell.py` and `app/freshservice.py` are a best-effort
+> implementation and have not been run against the live APIs. Verify the field
+> names and JSON shapes against your tenant before trusting a write-back — and
+> keep **Dry run** on for the first live comparison.
 
 You can also preview the UI without Python: open `web/index.html` in a
-browser. An in-page demo backend drives the same screens.
+browser. An in-page demo backend drives the same screens (it always serves
+demo data, regardless of the toggle).
 
 ## Configuration
 

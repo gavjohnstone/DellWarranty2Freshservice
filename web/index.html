@@ -77,7 +77,7 @@
         <div class="pad widen">
           <div class="sync-head">
             <div class="page-head">
-              <h1>Warranty Sync</h1>
+              <h1>Warranty Sync <span class="demo-badge" id="demo-badge">Demo data</span></h1>
               <p>Compare Freshservice warranty dates against Dell TechDirect and write back the differences.</p>
             </div>
             <div class="actions">
@@ -164,6 +164,21 @@
           <div class="page-head">
             <h1>Configuration</h1>
             <p>Credentials are held in Windows Credential Manager. Nothing here is stored in plain text.</p>
+          </div>
+
+          <!-- Data source -->
+          <div class="config-card">
+            <div class="head" style="margin-bottom:12px;">
+              <div class="title">
+                <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></div>
+                <div class="name">Data source</div>
+              </div>
+            </div>
+            <button class="syncall-btn" data-action="toggle-live" style="padding:4px 0;">
+              <span class="toggle" id="live-toggle"><span class="knob"></span></span>
+              <span class="lbl" style="color:#212b32; font-weight:500;">Use live Dell &amp; Freshservice APIs</span>
+            </button>
+            <p class="map-note" style="margin:10px 0 0;">Off = bundled demo data, no network calls. On = query the live APIs with the credentials below. Live mode needs the Dell client secret and Freshservice API key saved. Remember to <b>Save settings</b> after changing this.</p>
           </div>
 
           <!-- Dell card -->

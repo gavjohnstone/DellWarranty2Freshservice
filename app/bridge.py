@@ -192,6 +192,8 @@ class Api:
         s.fs_domain = data.get("fs_domain", s.fs_domain)
         if isinstance(data.get("field_map"), dict):
             s.field_map.update(data["field_map"])
+        if "demo_mode" in data:
+            s.demo_mode = bool(data["demo_mode"])
 
         # Secrets: only overwrite when the user actually typed something new
         # (an unchanged, masked value is left as-is).

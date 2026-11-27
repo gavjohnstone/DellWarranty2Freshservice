@@ -28,6 +28,7 @@
       { label: "Server", type_id: 53 },
     ],
     conn: { dell: "ok", fs: "ok" },
+    demoMode: true,
   };
   var toastTimer = null;
 
@@ -103,6 +104,10 @@
       navs[j].classList.toggle("active", navs[j].getAttribute("data-nav") === name);
     }
     if (name === "log") renderLog();
+  }
+
+  function updateDemoBadge() {
+    $("demo-badge").style.display = State.demoMode ? "inline-block" : "none";
   }
 
   function updateLogBadge() {
@@ -337,6 +342,11 @@
 
     "toggle-dryrun": function () { State.dryRun = !State.dryRun; updateToggle("dry-toggle", State.dryRun); },
     "toggle-syncall": function () { State.syncAll = !State.syncAll; updateToggle("all-toggle", State.syncAll); },
+    "toggle-live": function () {
+      State.demoMode = !State.demoMode;
+      updateToggle("live-toggle", !State.demoMode);
+      updateDemoBadge();
+    },
 
     "fetch": function () {
       if (isBusy()) return;
@@ -387,6 +397,10 @@
       var inp = $("map-" + k);
       if (inp) inp.value = fm[k];
     });
+    // data source
+    State.demoMode = cfg.demo_mode !== false;
+    updateToggle("live-toggle", !State.demoMode);
+    updateDemoBadge();
   }
 
   function gatherConfig() {
@@ -404,6 +418,7 @@
       fs_domain: $("cfg-fs-domain").value,
       fs_api_key: $("cfg-fs-key").value,
       field_map: fm,
+      demo_mode: State.demoMode,
     };
   }
 
@@ -420,6 +435,8 @@
     });
     updateToggle("dry-toggle", State.dryRun);
     updateToggle("all-toggle", State.syncAll);
+    updateToggle("live-toggle", !State.demoMode);
+    updateDemoBadge();
     updateLogBadge();
     updateFetchButton();
     updateApplyButton();

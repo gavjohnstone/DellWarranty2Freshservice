@@ -55,6 +55,7 @@ class Row:
     system: str
     status: str
     detail: str = ""
+    display_id: int = 0  # Freshservice display_id — the write-back target
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -140,6 +141,19 @@ class SyncEngine:
 
     # -- fetch + compare ----------------------------------------------------
     def fetch_and_compare(self, asset_label: str, type_id: int, sync_all: bool) -> None:
+        if not self.settings.demo_mode:
+            missing = []
+            if not get_secret("dell_client_secret"):
+                missing.append("Dell client secret")
+            if not get_secret("fs_api_key"):
+                missing.append("Freshservice API key")
+            if missing:
+                self._log("! Live mode needs credentials: " + ", ".join(missing)
+                          + ". Save them on the Configuration tab.")
+                self._phase("idle")
+                self._toast("Add credentials on Configuration to use live mode.", "#e0a000")
+                return
+
         self._phase("fetching")
         self._progress(0, "Connecting to Freshservice…")
         try:
@@ -160,6 +174,7 @@ class SyncEngine:
 
     def _demo_fetch(self, sync_all: bool) -> None:
         self.rows = []
+        self.today = DEMO_TODAY
         self.warranty_field = DEMO_FIELD
         label = "ALL asset types" if sync_all else "'Laptop' assets"
         for delay_ms, pct, step_label, line in _DEMO_FETCH_SEQUENCE_LAPTOP:
@@ -173,6 +188,7 @@ class SyncEngine:
 
     def _real_fetch(self, asset_label: str, type_id: int, sync_all: bool) -> None:
         s = self.settings
+        self.today = date.today().isoformat()
         fs = FreshserviceClient(s.fs_domain, get_secret("fs_api_key"))
         dell = DellClient(
             s.dell_client_id,
@@ -213,6 +229,7 @@ class SyncEngine:
         base = dict(
             id=row_id, name=asset.name, type=_type_label(asset.asset_type_id, self.settings),
             tag=tag, fsEnd=asset.warranty_expiry, dellEnd="", level="", system="",
+            display_id=asset.display_id,
         )
         if not tag:
             return Row(**base, status=STATUS_NO_TAG, detail="No serial number on asset")
@@ -279,7 +296,7 @@ class SyncEngine:
             type_id = _type_id(r.type, s)
             fields = self._build_fields(r, mappings, type_id)
             try:
-                fs.update_asset_fields(r.display_id if hasattr(r, "display_id") else r.id, fields)
+                fs.update_asset_fields(r.display_id or r.id, fields)
                 r.status = STATUS_SYNCED
                 r.detail = f"Updated {len(fields)} field(s)"
                 self._log(f"  + {r.name} ({r.tag}): {len(fields)} field(s) updated")
