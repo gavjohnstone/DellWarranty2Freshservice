@@ -121,20 +121,22 @@ class Api:
             self._emit({"type": "toast", "msg": "Dell TechDirect authenticated.", "dot": "#45d17f"})
             return
         try:
-            from .dell import DellClient
+            from .dell import DellAPIClient
 
             s = self.settings
-            DellClient(
+            ok, msg = DellAPIClient(
                 s.dell_client_id, get_secret("dell_client_secret"),
                 auth_url=s.dell_auth_url, warranty_url=s.dell_warranty_url,
-                log=self.engine._log,
             ).test_connection()
-            self._emit({"type": "conn", "which": "dell", "status": "ok"})
-            self.engine._log("OK: Dell authentication successful.")
-            self._emit({"type": "toast", "msg": "Dell TechDirect authenticated.", "dot": "#45d17f"})
         except Exception as exc:
+            ok, msg = False, str(exc)
+        if ok:
+            self._emit({"type": "conn", "which": "dell", "status": "ok"})
+            self.engine._log(f"OK: {msg}")
+            self._emit({"type": "toast", "msg": "Dell TechDirect authenticated.", "dot": "#45d17f"})
+        else:
             self._emit({"type": "conn", "which": "dell", "status": "error"})
-            self.engine._log(f"! Dell authentication failed: {exc}")
+            self.engine._log(f"! Dell authentication failed: {msg}")
             self._emit({"type": "toast", "msg": "Dell authentication failed.", "dot": "#d5281b"})
 
     def test_fs(self) -> bool:
@@ -151,24 +153,46 @@ class Api:
         try:
             from .freshservice import FreshserviceClient
 
-            FreshserviceClient(
-                self.settings.fs_domain, get_secret("fs_api_key"), log=self.engine._log
+            ok, msg = FreshserviceClient(
+                self.settings.fs_domain, get_secret("fs_api_key")
             ).test_connection()
-            self._emit({"type": "conn", "which": "fs", "status": "ok"})
-            self.engine._log("OK: Freshservice authentication successful.")
-            self._emit({"type": "toast", "msg": "Freshservice authenticated.", "dot": "#45d17f"})
         except Exception as exc:
+            ok, msg = False, str(exc)
+        if ok:
+            self._emit({"type": "conn", "which": "fs", "status": "ok"})
+            self.engine._log(f"OK: {msg}")
+            self._emit({"type": "toast", "msg": "Freshservice authenticated.", "dot": "#45d17f"})
+        else:
             self._emit({"type": "conn", "which": "fs", "status": "error"})
-            self.engine._log(f"! Freshservice authentication failed: {exc}")
+            self.engine._log(f"! Freshservice authentication failed: {msg}")
             self._emit({"type": "toast", "msg": "Freshservice authentication failed.", "dot": "#d5281b"})
 
-    def autodetect(self, asset_label: str, type_id: int) -> None:
-        field = self.settings.field_map.get("warranty_expiry_date", "").replace(
-            "{type_id}", str(type_id)
-        )
-        self.engine._log(f"Auto-detecting warranty field for '{asset_label}' (id={type_id})...")
-        self.engine._log(f"  Detected warranty field from type definition: '{field}'")
-        self._emit({"type": "toast", "msg": f"Detected: {field}", "dot": "#0072CE"})
+    def autodetect(self, asset_label: str, type_id: int) -> bool:
+        return self._run(self._autodetect, asset_label, int(type_id))
+
+    def _autodetect(self, asset_label: str, type_id: int) -> None:
+        if self.settings.demo_mode:
+            field = self.settings.field_map.get("warranty_expiry_date", "").replace(
+                "{type_id}", str(type_id)
+            )
+            self.engine._log(f"Auto-detecting warranty field for '{asset_label}' (id={type_id})...")
+            self.engine._log(f"  Detected warranty field from type definition: '{field}'")
+            self._emit({"type": "toast", "msg": f"Detected: {field}", "dot": "#0072CE"})
+            return
+        try:
+            from .freshservice import FreshserviceClient
+
+            fs = FreshserviceClient(self.settings.fs_domain, get_secret("fs_api_key"))
+            self.engine._log(f"Auto-detecting warranty field for '{asset_label}' (id={type_id})...")
+            field = fs.discover_warranty_field(type_id, log_cb=self.engine._log)
+        except Exception as exc:
+            self.engine._log(f"! Auto-detect failed: {exc}")
+            self._emit({"type": "toast", "msg": "Auto-detect failed — see the log.", "dot": "#d5281b"})
+            return
+        if field:
+            self._emit({"type": "toast", "msg": f"Detected: {field}", "dot": "#0072CE"})
+        else:
+            self._emit({"type": "toast", "msg": "Could not auto-detect — see the log.", "dot": "#e0a000"})
 
     # -- configuration ------------------------------------------------------
     def load_config(self) -> dict:

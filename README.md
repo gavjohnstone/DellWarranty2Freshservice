@@ -60,11 +60,19 @@ Freshservice and Dell both rate-limit their APIs. The clients honour the
 the activity log), so a large estate completes rather than aborting — it just
 takes longer while the per-minute budget refills.
 
-> **Note:** the live Dell TechDirect / Freshservice request and response
-> shapes in `app/dell.py` and `app/freshservice.py` are a best-effort
-> implementation and have not been run against the live APIs. Verify the field
-> names and JSON shapes against your tenant before trusting a write-back — and
-> keep **Dry run** on for the first live comparison.
+The live Dell/Freshservice logic in `app/dell.py`, `app/freshservice.py` and
+`app/sync.py` is ported from the proven standalone tool, including:
+
+- **Date-windowed listing** (year → quarter → month → week) to work around
+  Freshservice's 40-page (~1,200 asset) cap on large estates.
+- **Per-asset write-target resolution** — the warranty field's suffix is the
+  *defining* type's id (e.g. `warranty_expiry_date_57000489352` under
+  Hardware), resolved from each asset's real `type_fields` keys, with a
+  candidate-form fallback (bare/suffixed × root/`type_fields`) cached per run.
+- **Dell batching** with token refresh on a mid-run 401 and failed-batch
+  tracking (so "query failed" is shown distinctly from "no data").
+
+Keep **Dry run** on for the first live comparison on any tenant.
 
 You can also preview the UI without Python: open `web/index.html` in a
 browser. An in-page demo backend drives the same screens (it always serves
