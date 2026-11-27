@@ -127,6 +127,7 @@ class Api:
             DellClient(
                 s.dell_client_id, get_secret("dell_client_secret"),
                 auth_url=s.dell_auth_url, warranty_url=s.dell_warranty_url,
+                log=self.engine._log,
             ).test_connection()
             self._emit({"type": "conn", "which": "dell", "status": "ok"})
             self.engine._log("OK: Dell authentication successful.")
@@ -150,7 +151,9 @@ class Api:
         try:
             from .freshservice import FreshserviceClient
 
-            FreshserviceClient(self.settings.fs_domain, get_secret("fs_api_key")).test_connection()
+            FreshserviceClient(
+                self.settings.fs_domain, get_secret("fs_api_key"), log=self.engine._log
+            ).test_connection()
             self._emit({"type": "conn", "which": "fs", "status": "ok"})
             self.engine._log("OK: Freshservice authentication successful.")
             self._emit({"type": "toast", "msg": "Freshservice authenticated.", "dot": "#45d17f"})

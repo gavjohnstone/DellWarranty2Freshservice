@@ -17,6 +17,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
+from typing import Callable
 
 import requests
 
@@ -27,6 +28,11 @@ SERVICE_TAG_LEN = 7
 
 #: Dell limits how many tags may be queried in one request.
 MAX_TAGS_PER_BATCH = 100
+
+#: Wait on a 429 when Dell sends no Retry-After header.
+DEFAULT_RETRY_WAIT = 30
+#: How many times to wait-and-retry a single rate-limited request.
+MAX_RETRIES = 6
 
 
 def is_valid_service_tag(tag: str) -> bool:
@@ -62,15 +68,43 @@ class DellClient:
         warranty_url: str,
         session: requests.Session | None = None,
         timeout: int = 30,
+        log: Callable[[str], None] | None = None,
     ) -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.auth_url = auth_url
         self.warranty_url = warranty_url
         self.timeout = timeout
+        self.log = log or (lambda _m: None)
         self._session = session or requests.Session()
         self._token: str | None = None
         self._token_expiry: float = 0.0
+
+    # -- request plumbing ---------------------------------------------------
+    @staticmethod
+    def _retry_after(resp: requests.Response) -> int:
+        value = resp.headers.get("Retry-After")
+        if value:
+            try:
+                return max(1, int(float(value)))
+            except ValueError:
+                pass
+        return DEFAULT_RETRY_WAIT
+
+    def _request(self, method: str, url: str, **kwargs) -> requests.Response:
+        """Perform a request, waiting out 429 rate limits and retrying it."""
+        for attempt in range(MAX_RETRIES + 1):
+            resp = self._session.request(method, url, timeout=self.timeout, **kwargs)
+            if resp.status_code == 429 and attempt < MAX_RETRIES:
+                wait = self._retry_after(resp)
+                self.log(
+                    f"Rate limited by Dell (429); waiting {wait}s then retrying "
+                    f"(attempt {attempt + 1}/{MAX_RETRIES})…"
+                )
+                time.sleep(wait)
+                continue
+            return resp
+        return resp
 
     # -- auth ---------------------------------------------------------------
     def _bearer(self) -> str:
@@ -78,11 +112,11 @@ class DellClient:
         if self._token and time.time() < self._token_expiry - 30:
             return self._token
 
-        resp = self._session.post(
+        resp = self._request(
+            "POST",
             self.auth_url,
             data={"grant_type": "client_credentials"},
             auth=(self.client_id, self.client_secret),
-            timeout=self.timeout,
         )
         if resp.status_code != 200:
             raise DellAuthError(
@@ -113,11 +147,11 @@ class DellClient:
 
     def _get_batch(self, tags: list[str]) -> dict[str, Entitlement]:
         headers = {"Authorization": f"Bearer {self._bearer()}", "Accept": "application/json"}
-        resp = self._session.get(
+        resp = self._request(
+            "GET",
             self.warranty_url,
             headers=headers,
             params={"servicetags": ",".join(tags)},
-            timeout=self.timeout,
         )
         resp.raise_for_status()
         result: dict[str, Entitlement] = {}

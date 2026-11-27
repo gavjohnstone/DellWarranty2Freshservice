@@ -55,6 +55,11 @@ To use **live** data:
 If live mode is on but a credential is missing, the app says so in the
 activity log instead of calling out.
 
+Freshservice and Dell both rate-limit their APIs. The clients honour the
+`Retry-After` header on a 429 and wait-and-resume the same request (logged in
+the activity log), so a large estate completes rather than aborting — it just
+takes longer while the per-minute budget refills.
+
 > **Note:** the live Dell TechDirect / Freshservice request and response
 > shapes in `app/dell.py` and `app/freshservice.py` are a best-effort
 > implementation and have not been run against the live APIs. Verify the field

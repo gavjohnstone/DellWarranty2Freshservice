@@ -4,13 +4,19 @@ Handles the two things the sync needs from Freshservice:
   * listing assets of a given type, following the API's pagination, and
   * writing a handful of type-specific fields back onto an asset.
 
+Freshservice enforces a per-minute API rate limit, so every request goes
+through :meth:`FreshserviceClient._request`, which honours the ``Retry-After``
+header on a 429 and retries the *same* request rather than aborting the run.
+
 Like :class:`~app.dell.DellClient`, it knows nothing about Dell or the UI.
 """
 
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field
+from typing import Callable
 
 import requests
 
@@ -18,6 +24,11 @@ log = logging.getLogger(__name__)
 
 #: Freshservice returns at most 100 records per page.
 PAGE_SIZE = 100
+
+#: How long to wait on a 429 when the server sends no Retry-After header.
+DEFAULT_RETRY_WAIT = 30
+#: How many times to wait-and-retry a single rate-limited request.
+MAX_RETRIES = 8
 
 
 @dataclass
@@ -43,17 +54,45 @@ class FreshserviceClient:
         *,
         session: requests.Session | None = None,
         timeout: int = 30,
+        log: Callable[[str], None] | None = None,
     ) -> None:
         self.base = f"https://{domain.rstrip('/')}/api/v2"
         self.api_key = api_key
         self.timeout = timeout
+        self.log = log or (lambda _m: None)
         self._session = session or requests.Session()
         # Freshservice uses HTTP basic auth: the API key as the username and
         # an arbitrary password.
         self._session.auth = (api_key, "X")
 
+    # -- request plumbing ---------------------------------------------------
+    @staticmethod
+    def _retry_after(resp: requests.Response) -> int:
+        value = resp.headers.get("Retry-After")
+        if value:
+            try:
+                return max(1, int(float(value)))
+            except ValueError:
+                pass
+        return DEFAULT_RETRY_WAIT
+
+    def _request(self, method: str, url: str, **kwargs) -> requests.Response:
+        """Perform a request, waiting out 429 rate limits and retrying it."""
+        for attempt in range(MAX_RETRIES + 1):
+            resp = self._session.request(method, url, timeout=self.timeout, **kwargs)
+            if resp.status_code == 429 and attempt < MAX_RETRIES:
+                wait = self._retry_after(resp)
+                self.log(
+                    f"Rate limited by Freshservice (429); waiting {wait}s then retrying "
+                    f"(attempt {attempt + 1}/{MAX_RETRIES})…"
+                )
+                time.sleep(wait)
+                continue
+            return resp
+        return resp  # exhausted retries; caller inspects status
+
     def test_connection(self) -> None:
-        resp = self._session.get(f"{self.base}/agents", params={"per_page": 1}, timeout=self.timeout)
+        resp = self._request("GET", f"{self.base}/agents", params={"per_page": 1})
         resp.raise_for_status()
 
     # -- assets -------------------------------------------------------------
@@ -77,7 +116,7 @@ class FreshserviceClient:
 
         while True:
             params["page"] = page
-            resp = self._session.get(f"{self.base}/assets", params=params, timeout=self.timeout)
+            resp = self._request("GET", f"{self.base}/assets", params=params)
             resp.raise_for_status()
             batch = resp.json().get("assets", [])
             kept = 0
@@ -113,10 +152,10 @@ class FreshserviceClient:
     # -- write-back ---------------------------------------------------------
     def update_asset_fields(self, display_id: int, type_fields: dict) -> None:
         """Write ``type_fields`` onto one asset. Raises on API error."""
-        resp = self._session.put(
+        resp = self._request(
+            "PUT",
             f"{self.base}/assets/{display_id}",
             json={"asset": {"type_fields": type_fields}},
-            timeout=self.timeout,
         )
         if resp.status_code >= 400:
             raise requests.HTTPError(

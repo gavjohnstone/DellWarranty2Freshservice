@@ -189,12 +189,13 @@ class SyncEngine:
     def _real_fetch(self, asset_label: str, type_id: int, sync_all: bool) -> None:
         s = self.settings
         self.today = date.today().isoformat()
-        fs = FreshserviceClient(s.fs_domain, get_secret("fs_api_key"))
+        fs = FreshserviceClient(s.fs_domain, get_secret("fs_api_key"), log=self._log)
         dell = DellClient(
             s.dell_client_id,
             get_secret("dell_client_secret"),
             auth_url=s.dell_auth_url,
             warranty_url=s.dell_warranty_url,
+            log=self._log,
         )
 
         self.warranty_field = self._warranty_field_for(type_id)
@@ -285,7 +286,7 @@ class SyncEngine:
 
     def _real_apply(self, pending: list[Row]) -> None:
         s = self.settings
-        fs = FreshserviceClient(s.fs_domain, get_secret("fs_api_key"))
+        fs = FreshserviceClient(s.fs_domain, get_secret("fs_api_key"), log=self._log)
         mappings = {k: v for k, v in s.field_map.items() if v}
         self._phase("applying")
         self._progress(0, f"Writing {len(pending)} assets to Freshservice…")
