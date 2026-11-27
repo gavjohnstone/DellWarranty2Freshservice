@@ -1,6 +1,6 @@
 # Dell Warranty Sync for Freshservice
 
-A small desktop tool for Enterprise IT that compares Freshservice asset
+A small desktop tool for a corporate IT team that compares Freshservice asset
 warranty dates against **Dell TechDirect** and writes back the differences.
 
 It's a [pywebview](https://pywebview.flowrl.com/) app: the UI is plain
