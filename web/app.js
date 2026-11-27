@@ -110,6 +110,39 @@
     $("demo-badge").style.display = State.demoMode ? "inline-block" : "none";
   }
 
+  // ---- schedule ---------------------------------------------------------
+  function updateSchedDayVisibility() {
+    $("sched-day-col").style.display = $("sched-frequency").value === "WEEKLY" ? "flex" : "none";
+  }
+
+  function loadSchedule() {
+    call("get_schedule").then(function (s) {
+      s = s || {};
+      var createBtn = document.querySelector('[data-action="create-schedule"]');
+      if (s.supported === false) {
+        $("sched-status").textContent = "Scheduling is available on Windows only.";
+        if (createBtn) createBtn.disabled = true;
+        $("sched-pill").style.display = "none";
+        return;
+      }
+      if (createBtn) createBtn.disabled = false;
+      if (s.frequency) $("sched-frequency").value = s.frequency;
+      if (s.day) $("sched-day").value = s.day;
+      if (s.time) $("sched-time").value = s.time;
+      if (typeof s.apply !== "undefined") $("sched-action").value = s.apply ? "apply" : "report";
+      updateSchedDayVisibility();
+      $("sched-pill").style.display = s.task_exists ? "inline-flex" : "none";
+      if (s.task_exists) {
+        var bits = [];
+        if (s.next_run) bits.push("Next run: " + s.next_run);
+        bits.push(s.apply ? "writes enabled" : "report only");
+        $("sched-status").textContent = bits.join(" · ");
+      } else {
+        $("sched-status").textContent = "No schedule set.";
+      }
+    }).catch(function () {});
+  }
+
   function updateLogBadge() {
     var badgeEl = $("log-badge");
     badgeEl.textContent = String(State.logLines.length);
@@ -367,6 +400,15 @@
     },
     "save": function () { call("save_config", gatherConfig()); },
     "reload": function () { call("reload_config").then(applyConfig); },
+    "create-schedule": function () {
+      call("create_schedule", {
+        frequency: $("sched-frequency").value,
+        day: $("sched-day").value,
+        time: $("sched-time").value,
+        apply: $("sched-action").value === "apply",
+      }).then(loadSchedule);
+    },
+    "remove-schedule": function () { call("remove_schedule").then(loadSchedule); },
     "clear-log": function () {
       call("clear_log"); State.logLines = []; updateLogBadge(); renderLog();
     },
@@ -443,6 +485,9 @@
     renderSyncBody();
     updatePill("dell");
     updatePill("fs");
+    var freqSel = $("sched-frequency");
+    if (freqSel) freqSel.addEventListener("change", updateSchedDayVisibility);
+    updateSchedDayVisibility();
   }
 
   function loadConfig() {
@@ -453,10 +498,13 @@
     wire();
     if (window.pywebview && window.pywebview.api) {
       loadConfig();
+      loadSchedule();
     } else {
-      window.addEventListener("pywebviewready", loadConfig);
+      window.addEventListener("pywebviewready", function () { loadConfig(); loadSchedule(); });
       // No pywebview at all (plain browser): fall back to the in-page demo.
-      setTimeout(function () { if (!window.pywebview) applyConfig(DemoBackend.config); }, 60);
+      setTimeout(function () {
+        if (!window.pywebview) { applyConfig(DemoBackend.config); loadSchedule(); }
+      }, 60);
     }
   }
 
@@ -641,6 +689,17 @@
     save_log: function () {
       D({ type: "toast", msg: "Log saved to warranty_sync.log", dot: "#45d17f" });
       return "warranty_sync.log";
+    },
+    get_schedule: function () {
+      return Promise.resolve({ supported: true, task_exists: false, frequency: "WEEKLY", time: "07:30", day: "MON", apply: false });
+    },
+    create_schedule: function () {
+      D({ type: "toast", msg: "Schedule created.", dot: "#45d17f" });
+      return Promise.resolve({ ok: true });
+    },
+    remove_schedule: function () {
+      D({ type: "toast", msg: "Schedule removed.", dot: "#0072CE" });
+      return Promise.resolve({ ok: true });
     },
   };
 })();

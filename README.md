@@ -78,6 +78,34 @@ You can also preview the UI without Python: open `web/index.html` in a
 browser. An in-page demo backend drives the same screens (it always serves
 demo data, regardless of the toggle).
 
+## Automatic / scheduled runs
+
+The tool can run unattended using your saved settings — the last asset-type
+scope you fetched, the field mapping and the stored credentials.
+
+**Headless mode** (what a scheduled task invokes):
+
+```bash
+python main.py --sync            # report only (dry run) — no writes
+python main.py --sync --apply    # write warranty updates back to Freshservice
+python main.py --sync --export   # also write an XLSX of the comparison
+```
+
+Each run appends to `~/DellWarrantySync-logs/warranty_sync_YYYYMMDD.log` and
+exits non-zero if anything failed (so a scheduler can alert on it). Demo mode
+is refused for scheduled runs — it needs live mode and saved credentials.
+
+**In-app scheduler (Windows):** the **Automatic schedule** panel on the
+Configuration tab registers a Windows Task Scheduler job for you — pick the
+frequency, time, and whether each run should *apply* writes or *report only*,
+then **Create / update schedule**.
+
+> Credentials live in the **per-user** Windows Credential Manager, so the task
+> runs as the current user. To have it run while you're logged off, open Task
+> Scheduler, find the **DellWarrantySync** task, and tick *"Run whether user is
+> logged on or not"* (it will ask for that account's password — the app never
+> stores it).
+
 ## Configuration
 
 Set these on the **Configuration** tab (or edit

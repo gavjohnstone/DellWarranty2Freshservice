@@ -86,6 +86,13 @@ class Api:
 
     # -- sync ---------------------------------------------------------------
     def start_fetch(self, asset_label: str, type_id: int, sync_all: bool) -> bool:
+        # Remember the scope so a scheduled headless run reuses it.
+        self.settings.last_asset_type_id = int(type_id)
+        self.settings.last_sync_all = bool(sync_all)
+        try:
+            save_settings(self.settings)
+        except Exception:
+            log.debug("Could not persist last selection", exc_info=True)
         return self._run(
             self.engine.fetch_and_compare, asset_label, int(type_id), bool(sync_all)
         )
@@ -244,6 +251,66 @@ class Api:
         self.engine._log("Settings reloaded from Credential Manager.")
         self._emit({"type": "toast", "msg": "Settings reloaded from store.", "dot": "#0072CE"})
         return self.load_config()
+
+    # -- scheduling ---------------------------------------------------------
+    def get_schedule(self) -> dict:
+        from . import scheduler
+
+        desc = dict(self.settings.schedule or {})
+        desc["supported"] = scheduler.is_supported()
+        info = scheduler.query()
+        desc["task_exists"] = bool(info.get("exists"))
+        if info.get("next_run"):
+            desc["next_run"] = info["next_run"]
+        if info.get("status"):
+            desc["status"] = info["status"]
+        return desc
+
+    def create_schedule(self, opts: dict) -> dict:
+        from . import scheduler
+
+        opts = opts or {}
+        freq = (opts.get("frequency") or "WEEKLY").upper()
+        time_hhmm = opts.get("time") or "07:30"
+        day = (opts.get("day") or "MON").upper()
+        apply = bool(opts.get("apply"))
+
+        if not scheduler.is_supported():
+            self._emit({"type": "toast", "msg": "Scheduling is only available on Windows.", "dot": "#e0a000"})
+            return {"ok": False, "supported": False}
+        try:
+            ok, msg = scheduler.create(freq, time_hhmm, apply, day)
+        except ValueError as exc:
+            self._emit({"type": "toast", "msg": str(exc), "dot": "#d5281b"})
+            return {"ok": False, "message": str(exc)}
+
+        if ok:
+            self.settings.schedule = {
+                "enabled": True, "frequency": freq, "time": time_hhmm, "apply": apply, "day": day,
+            }
+            save_settings(self.settings)
+            when = f"{freq.title()} at {time_hhmm}" + (f" ({day})" if freq == "WEEKLY" else "")
+            self.engine._log(f"Scheduled task created: {when} — "
+                             + ("writes enabled" if apply else "report only"))
+            self._emit({"type": "toast", "msg": "Schedule created.", "dot": "#45d17f"})
+        else:
+            self.engine._log(f"! Could not create schedule: {msg}")
+            self._emit({"type": "toast", "msg": "Could not create schedule — see the log.", "dot": "#d5281b"})
+        return {"ok": ok, "message": msg}
+
+    def remove_schedule(self) -> dict:
+        from . import scheduler
+
+        ok, msg = scheduler.remove()
+        self.settings.schedule = {}
+        save_settings(self.settings)
+        if ok:
+            self.engine._log("Scheduled task removed.")
+            self._emit({"type": "toast", "msg": "Schedule removed.", "dot": "#0072CE"})
+        else:
+            self.engine._log(f"! Could not remove schedule: {msg}")
+            self._emit({"type": "toast", "msg": "Could not remove schedule — see the log.", "dot": "#d5281b"})
+        return {"ok": ok, "message": msg}
 
     # -- activity log -------------------------------------------------------
     def clear_log(self) -> bool:

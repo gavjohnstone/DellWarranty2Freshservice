@@ -243,6 +243,37 @@
             </div>
           </div>
 
+          <!-- Automatic schedule -->
+          <div class="config-card">
+            <div class="head" style="margin-bottom:6px;">
+              <div class="title">
+                <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div>
+                <div class="name">Automatic schedule</div>
+              </div>
+              <span class="pill" id="sched-pill" style="display:none;"><span class="dot"></span>Scheduled</span>
+            </div>
+            <p class="map-note" style="margin:0 0 16px 40px;">Run the sync automatically using your saved settings — the last asset-type scope you used, the field mapping and your stored credentials. Registers a Windows Task Scheduler job.</p>
+            <div class="sched-grid">
+              <div class="col"><label>Frequency</label>
+                <select id="sched-frequency"><option value="DAILY">Daily</option><option value="WEEKLY" selected>Weekly</option><option value="MONTHLY">Monthly (1st)</option></select>
+              </div>
+              <div class="col" id="sched-day-col"><label>Day</label>
+                <select id="sched-day"><option value="MON">Monday</option><option value="TUE">Tuesday</option><option value="WED">Wednesday</option><option value="THU">Thursday</option><option value="FRI">Friday</option><option value="SAT">Saturday</option><option value="SUN">Sunday</option></select>
+              </div>
+              <div class="col"><label>Time</label>
+                <input class="in" id="sched-time" type="time" value="07:30">
+              </div>
+              <div class="col"><label>On each run</label>
+                <select id="sched-action"><option value="report" selected>Report only (no writes)</option><option value="apply">Apply writes to Freshservice</option></select>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:18px; align-items:center; flex-wrap:wrap;">
+              <button class="btn-primary" data-action="create-schedule">Create / update schedule</button>
+              <button class="btn btn-ghost" data-action="remove-schedule">Remove schedule</button>
+              <span id="sched-status" style="font-size:12.5px; color:#4c6272;"></span>
+            </div>
+          </div>
+
           <div class="config-actions">
             <button class="btn-primary" data-action="save">Save settings</button>
             <button class="btn btn-ghost" data-action="reload">Reload from store</button>

@@ -80,6 +80,15 @@ class Settings:
     #: sample data so the UI is fully explorable without credentials.
     demo_mode: bool = True
 
+    #: Last sync scope used interactively — reused by the scheduled headless run.
+    last_asset_type_id: int = 47
+    last_sync_all: bool = False
+
+    #: Scheduled-task descriptor for display (the real task lives in Windows
+    #: Task Scheduler). e.g. {"enabled": True, "frequency": "WEEKLY",
+    #: "day": "MON", "time": "07:30", "apply": False}.
+    schedule: dict = field(default_factory=dict)
+
     def to_json(self) -> dict:
         d = asdict(self)
         d["asset_types"] = [asdict(a) for a in self.asset_types]

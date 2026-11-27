@@ -21,6 +21,11 @@ def main() -> int:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
+    # Headless scheduled run — no window.
+    if "--sync" in sys.argv:
+        from app.headless import run_sync
+        return run_sync(apply="--apply" in sys.argv, export="--export" in sys.argv)
+
     try:
         import webview
     except ImportError:

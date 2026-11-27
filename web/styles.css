@@ -201,7 +201,9 @@ select { min-width: 240px; cursor: pointer; }
 .empty p { margin: 8px 0 22px; color: var(--muted); font-size: 13.5px; max-width: 400px; }
 
 /* summary cards */
-.cards { margin-top: 18px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.cards { margin-top: 18px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1180px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .summary-card {
   text-align: left; background: #fff; border: 2px solid #e6ebee; border-radius: 12px;
   padding: 14px 15px; cursor: pointer; transition: border-color .12s, background .12s;
@@ -268,6 +270,12 @@ input.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
 .map-grid .opt { color: var(--faint-2); font-weight: 400; }
 .config-actions { display: flex; gap: 12px; margin-top: 22px; }
 
+/* schedule panel */
+.sched-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 18px; }
+.sched-grid .col label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.sched-grid select, .sched-grid input { width: 100%; min-width: 0; }
+@media (max-width: 760px) { .sched-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
 /* ---- log screen -------------------------------------------------------- */
 .log-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .log-actions { display: flex; gap: 10px; }
@@ -312,6 +320,31 @@ input.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
 }
 .toast .inner .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-live); }
 
-.widen { max-width: 1180px; }
-.narrow { max-width: 880px; }
-.about-pad { max-width: 720px; }
+.widen { max-width: 1500px; }
+.narrow { max-width: 920px; }
+.about-pad { max-width: 760px; }
+
+/* ---- responsive / scalable ------------------------------------------- */
+@media (max-width: 1024px) {
+  .pad { padding: 22px 22px 34px; }
+  .config-card .grid-2 { grid-template-columns: 1fr; }
+  .map-grid { grid-template-columns: 1fr; gap: 6px 0; }
+  .map-grid label { margin-top: 6px; }
+}
+@media (max-width: 880px) {
+  .sidebar { width: 68px; padding: 14px 8px; }
+  .sidebar .logo > div, .sidebar .heading, .sidebar .status .label,
+  .sidebar .status .state, .sidebar .version { display: none; }
+  .sidebar .logo { justify-content: center; }
+  .nav-item { justify-content: center; gap: 0; padding: 10px; font-size: 0; }
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-item .count { position: absolute; top: 2px; right: 2px; margin: 0; min-width: 16px; font-size: 9px; }
+  .sidebar .status .row { justify-content: center; }
+  .sync-head .actions { width: 100%; }
+}
+@media (max-width: 560px) {
+  .sync-head .actions { flex-wrap: wrap; }
+  .control-card { gap: 12px; }
+  .fetch-btn { margin-left: 0; width: 100%; justify-content: center; }
+  select { min-width: 0; width: 100%; }
+}
