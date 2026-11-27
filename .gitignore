@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# App output
+*.xlsx
+warranty_sync.log
+.dell_warranty_sync/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

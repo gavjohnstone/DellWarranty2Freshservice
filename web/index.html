@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dell Warranty Sync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- Title bar -->
+  <div class="titlebar pywebview-drag-region">
+    <div class="brand">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4.5"/></svg>
+      <span class="name">Dell Warranty Sync</span>
+      <span class="sub">— Freshservice · Enterprise IT</span>
+    </div>
+    <div class="winctl">
+      <button data-action="win-min" aria-label="Minimise"><svg width="11" height="11" viewBox="0 0 11 11"><line x1="1" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.2"/></svg></button>
+      <button data-action="win-max" aria-label="Maximise"><svg width="10" height="10" viewBox="0 0 11 11"><rect x="1.5" y="1.5" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.1"/></svg></button>
+      <button class="close" data-action="win-close" aria-label="Close"><svg width="11" height="11" viewBox="0 0 11 11"><line x1="1.5" y1="1.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.2"/><line x1="9.5" y1="1.5" x2="1.5" y2="9.5" stroke="currentColor" stroke-width="1.2"/></svg></button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="badge"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4.5"/></svg></div>
+        <div>
+          <div class="t1">Warranty Sync</div>
+          <div class="t2">Freshservice · Dell</div>
+        </div>
+      </div>
+
+      <div class="heading">WORKSPACE</div>
+
+      <button class="nav-item active" data-nav="sync">
+        <span class="bar"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Warranty Sync
+      </button>
+      <button class="nav-item" data-nav="config">
+        <span class="bar"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        Configuration
+      </button>
+      <button class="nav-item" data-nav="log">
+        <span class="bar"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        Activity Log
+        <span class="count" id="log-badge">0</span>
+      </button>
+      <button class="nav-item" data-nav="about">
+        <span class="bar"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        About
+      </button>
+
+      <div class="status">
+        <div class="row"><span class="dot"></span><span class="label">Dell TechDirect</span><span class="state">Connected</span></div>
+        <div class="row"><span class="dot"></span><span class="label">Freshservice</span><span class="state">Connected</span></div>
+        <div class="version" id="version">v1.0 · build 18</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" id="main">
+
+      <!-- ============ SYNC ============ -->
+      <section class="screen sync active" data-screen="sync">
+        <div class="pad widen">
+          <div class="sync-head">
+            <div class="page-head">
+              <h1>Warranty Sync</h1>
+              <p>Compare Freshservice warranty dates against Dell TechDirect and write back the differences.</p>
+            </div>
+            <div class="actions">
+              <button class="dryrun-btn" data-action="toggle-dryrun">
+                <span class="toggle on" id="dry-toggle"><span class="knob"></span></span>
+                <span class="lbl">Dry run</span>
+              </button>
+              <button class="apply-btn" id="apply-btn" data-action="apply">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+                Apply updates
+              </button>
+              <button class="btn" data-action="export">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export
+              </button>
+            </div>
+          </div>
+
+          <!-- Control card -->
+          <div class="control-card">
+            <div class="field">
+              <label>ASSET TYPE</label>
+              <select id="asset-type"></select>
+            </div>
+            <button class="syncall-btn" data-action="toggle-syncall">
+              <span class="toggle" id="all-toggle"><span class="knob"></span></span>
+              <span class="lbl">Sync all asset types</span>
+            </button>
+            <button class="fetch-btn" id="fetch-btn" data-action="fetch">
+              <svg id="fetch-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span id="fetch-label">Fetch assets &amp; query Dell</span>
+            </button>
+          </div>
+
+          <!-- Progress banner -->
+          <div class="progress-card" id="progress-card" style="display:none;">
+            <div class="top">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="2.2" stroke-linecap="round" style="animation: spin .8s linear infinite;"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+              <span class="lbl" id="progress-label"></span>
+              <span class="pct" id="progress-pct">0%</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty" id="empty-state">
+            <div class="bubble"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div>
+            <h2>No comparison yet</h2>
+            <p>Choose an asset type and pull warranty data from Dell to compare it against what Freshservice currently holds.</p>
+            <button class="btn-primary" data-action="fetch">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Fetch assets &amp; query Dell
+            </button>
+          </div>
+
+          <!-- Results -->
+          <div id="results" style="display:none;">
+            <div class="cards" id="cards"></div>
+            <div class="table-card">
+              <div class="bar">
+                <span class="l">Showing <b id="shown-count">0</b> of <span id="total-count">0</span> · <span id="filter-label">All assets</span></span>
+                <span class="r">Warranty field: <span class="mono" id="warranty-field">warranty_expiry_date_47</span></span>
+              </div>
+              <div class="table-scroll">
+                <table class="results">
+                  <thead>
+                    <tr>
+                      <th>ASSET</th><th>TYPE</th><th>SERVICE TAG</th><th>FS END</th>
+                      <th>DELL END</th><th class="num">DAYS</th><th>SERVICE LEVEL</th>
+                      <th>SYSTEM</th><th>STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CONFIG ============ -->
+      <section class="screen config" data-screen="config">
+        <div class="pad narrow">
+          <div class="page-head">
+            <h1>Configuration</h1>
+            <p>Credentials are held in Windows Credential Manager. Nothing here is stored in plain text.</p>
+          </div>
+
+          <!-- Dell card -->
+          <div class="config-card">
+            <div class="head">
+              <div class="title">
+                <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20"/></svg></div>
+                <div class="name">Dell TechDirect API</div>
+              </div>
+              <span class="pill" id="dell-pill"><span class="dot"></span>Authenticated</span>
+            </div>
+            <div class="grid-2">
+              <div class="col"><label>Client ID</label><input class="in mono" id="cfg-dell-id"></div>
+              <div class="col"><label>Client Secret</label><input class="in mono" id="cfg-dell-secret" type="password" placeholder="Stored in Credential Manager"></div>
+              <div class="col span2"><label>Auth URL</label><input class="in mono" id="cfg-dell-auth"></div>
+              <div class="col span2"><label>Warranty URL</label><input class="in mono" id="cfg-dell-warranty"></div>
+            </div>
+            <button class="btn-outline" data-action="test-dell">Test Dell connection</button>
+          </div>
+
+          <!-- FS card -->
+          <div class="config-card">
+            <div class="head">
+              <div class="title">
+                <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
+                <div class="name">Freshservice API</div>
+              </div>
+              <span class="pill" id="fs-pill"><span class="dot"></span>Authenticated</span>
+            </div>
+            <div class="grid-2">
+              <div class="col"><label>Domain</label><input class="in mono" id="cfg-fs-domain"></div>
+              <div class="col"><label>API Key</label><input class="in mono" id="cfg-fs-key" type="password" placeholder="Stored in Credential Manager"></div>
+            </div>
+            <button class="btn-outline" data-action="test-fs">Test Freshservice connection</button>
+          </div>
+
+          <!-- Field mapping card -->
+          <div class="config-card">
+            <div class="head" style="margin-bottom:6px;">
+              <div class="title">
+                <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#005EB8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6zM4 14h6v6H4z"/></svg></div>
+                <div class="name">Field mapping</div>
+              </div>
+            </div>
+            <p class="map-note">Which Freshservice field each Dell value writes to. Use <span class="mono" style="color:#4c6272;">{type_id}</span> as a placeholder — it's substituted per asset. Leave blank to skip a field.</p>
+            <div class="map-grid">
+              <label>Warranty expiry date</label>
+              <input class="in mono" id="map-warranty_expiry_date">
+              <label>Service level</label>
+              <input class="in mono" id="map-service_level">
+              <label>System description</label>
+              <input class="in mono" id="map-system_description">
+              <label>Ship date</label>
+              <input class="in mono" id="map-ship_date">
+              <label>Warranty start date <span class="opt">(optional)</span></label>
+              <input class="in mono" id="map-warranty_start_date" placeholder="leave blank to skip">
+              <label>End of life</label>
+              <input class="in mono" id="map-end_of_life">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:18px;">
+              <button class="btn btn-ghost" data-action="autodetect">Auto-detect warranty field</button>
+            </div>
+          </div>
+
+          <div class="config-actions">
+            <button class="btn-primary" data-action="save">Save settings</button>
+            <button class="btn btn-ghost" data-action="reload">Reload from store</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ LOG ============ -->
+      <section class="screen log" data-screen="log">
+        <div class="pad">
+          <div class="log-head">
+            <div class="page-head">
+              <h1>Activity Log</h1>
+              <p>Live output from the sync engine — Freshservice pagination, Dell batches and write-backs.</p>
+            </div>
+            <div class="log-actions">
+              <button class="log-btn" data-action="clear-log">Clear</button>
+              <button class="log-btn save" data-action="save-log">Save log…</button>
+            </div>
+          </div>
+          <div class="terminal" id="terminal">
+            <div class="empty-line" id="log-empty">No activity yet. Run a sync from the Warranty Sync tab to see live output here.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ABOUT ============ -->
+      <section class="screen about" data-screen="about">
+        <div class="pad about-pad">
+          <div class="about-head">
+            <div class="mark"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4.5"/></svg></div>
+            <div>
+              <h1>Dell Warranty Sync for Freshservice</h1>
+              <div class="ver">Version 1.0 · Enterprise IT</div>
+            </div>
+          </div>
+          <div class="about-card">
+            <h2>How it works</h2>
+            <div class="steps">
+              <div class="step"><span class="num">1</span><span class="txt">Configure your Dell TechDirect and Freshservice credentials on the Configuration tab.</span></div>
+              <div class="step"><span class="num">2</span><span class="txt">Pick an asset type, then fetch assets and query Dell for their warranty entitlements.</span></div>
+              <div class="step"><span class="num">3</span><span class="txt">Review the comparison, then export to XLSX or apply the updates back to Freshservice.</span></div>
+            </div>
+            <div class="facts">
+              <div class="fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#007f3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Credentials stored in Windows Credential Manager, never in plain text.</div>
+              <div class="fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#007f3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dry run is on by default — nothing is written until you turn it off.</div>
+              <div class="fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#007f3b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Dell tags are batched and rate-limited; bearer tokens are cached for their lifetime.</div>
+            </div>
+          </div>
+          <div class="about-foot">Built by Gav · Enterprise IT · The Dell, Freshservice and sync engine classes are decoupled for reuse in the Admin Suite.</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <div class="inner"><span class="dot" id="toast-dot"></span><span id="toast-text"></span></div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
